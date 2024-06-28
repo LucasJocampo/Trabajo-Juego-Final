@@ -1,5 +1,36 @@
 import wollok.game.*
 import personaje.*
+import items.*
+import skin.*
+
+class Bloque {
+	
+	var property position
+	
+	method image() = skin.bloqueIndestructible()
+	
+	method chocar() {
+		return monigote.volver()
+	}
+	method morir () { }
+	method morirPorBomba () { }
+	
+}
+
+class BloqueRompible inherits Bloque {
+	
+	override method image() = skin.bloqueRompible()
+	
+	override method morirPorBomba () {
+		if ((1..10).anyOne() > 6) { 
+			const items = [{new Ayuda(position = position)}, {new Puntos(position = position)}]
+			var item = items.anyOne().apply()
+			item.agregarItem()
+		}
+		game.removeVisual(self)
+	}
+	
+}
 
 object coordenadasLibres {
 	var property coords = []
@@ -25,54 +56,24 @@ object coordenadasLibres {
 	
 }
 
-class bloque {
 
-    const x = 0
-    const y = 0
-    var position = game.at(x,y)
-
-    method position() = position
-
-    method image() = "indestructible.png"
-
-    method chocar() {
-        return monigote.volver()
-    }
-    method morir () { }
-    method morirPorBomba () { }
-
-}
-
-class bloqueRompible inherits bloque {
-
-
-    method image() = "roca.jpg"
-
-    method morirPorBomba () {
-        game.removeVisual(self)
-    }
-	method morir()
-}
-
-
-	
 object tablero {
 	
-	const bloques = []
-	var columna = 0
-	var fila = 0
-	
+	const property bloques = []
+	var x = 0
+	var y = 0
+		
 	method crearBloque() {
 		
-		if (columna%2 != 0 and fila%2 != 0) {
-			bloques.add(new bloque(x = fila, y = columna))
-			coordenadasLibres.removerCoordenada(game.at(fila, columna))
+		if (x%2 != 0 and y%2 != 0) {
+			bloques.add(new Bloque(position = game.at(x,y)))
+			coordenadasLibres.removerCoordenada(game.at(x, y))
 		}
-		columna += 1
+		x += 1
 		
-		if (columna == 15) {
-			columna = 0
-			fila += 1
+		if (x == 15) {
+			x = 0
+			y += 1
 		}
 	}
 	
@@ -82,39 +83,22 @@ object tablero {
 	}
 	 
 	method agregarBloqueEnCoordenada(a,b) {
-		bloques.add(new bloque(x = a, y = b))
+		bloques.add(new Bloque(position = game.at(a,b)))
 	}
 	 
 	method borde() {
-		var b= 0
-		var a= 0
-		15.times({e => self.agregarBloqueEnCoordenada(-1,b)
-			b+=1
-		})
-		b=0
-		15.times({e => self.agregarBloqueEnCoordenada(15,b)
-			b+=1
-		})
-		
-		15.times({e => self.agregarBloqueEnCoordenada(a,-1)
-			a+=1
-		})
-		a=0
-		15.times({e => self.agregarBloqueEnCoordenada(a,15)
-			a+=1
-		})
-		
-		
+		15.times({e => self.agregarBloqueEnCoordenada(-1,e-1)})
+		15.times({e => self.agregarBloqueEnCoordenada(15,e-1)})
+		15.times({e => self.agregarBloqueEnCoordenada(e-1,-1)})
+		15.times({e => self.agregarBloqueEnCoordenada(e-1,15)})		
 	}
 	
 	method crearBloquesRompibles() {
 		40.times({ t =>
 			var a = coordenadasLibres.coords().anyOne()
 			coordenadasLibres.removerCoordenada(a)
-			bloques.add(new bloqueRompible(position = a))
+			bloques.add(new BloqueRompible(position = a))
 		})
 	}	
-	
-	method bloques() = bloques
 	
 }

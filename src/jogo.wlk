@@ -2,15 +2,9 @@ import wollok.game.*
 import skin.*
 import personaje.*
 import tablero.*
+import menu.*
 
-object nuevoFondo {
-	method image() = "menu.PNG"
-	method position() = game.origin()
-	method chocar(){}
-	
-}
-
-class malo {
+class Malo {
 		
 	var position = self.asignarPosicion()
 	const imagen = skin.enemigos().anyOne()
@@ -34,7 +28,7 @@ class malo {
 		
 		// Solo se mueve en una direccion en caso de que en esa direccion no haya nada o
 		// este el personaje
-		if (game.getObjectsIn(movimiento).isEmpty() || game.getObjectsIn(movimiento) == [monigote]) {
+		if (game.getObjectsIn(movimiento).isEmpty() || game.getObjectsIn(movimiento).contains(monigote)) {
 			position = movimiento
 		} 
 	}
@@ -44,25 +38,39 @@ class malo {
 	}
 	
 	method morirPorBomba() {
-		game.removeVisual(self)
+		cantidadPuntos.cantidad(cantidadPuntos.cantidad() + 5)
+		if (jogo.malos().size() <= 1) {
+			var pantallaFinal = new Cartel(image = skin.pantallaFinal())
+			var arrancarDeNuevo = new Cartel(image = skin.cartelFinal())
+			game.clear()
+			game.addVisual(pantallaFinal)
+			game.addVisual(arrancarDeNuevo)
+			keyboard.r().onPressDo({{game.stop()}})
+		} else {
+			game.removeVisual(self)
+		}
 	}
 }
+
+class Cartel {
+	var property image
+	method position() = game.origin()
+} 
 
 object jogo {
   	var property malos = []
   	var property bombas = []
 	
-
 	method generarLayout() {
   		tablero.crearBloques()
-  		tablero.crearBloquesRompibles()
   		tablero.borde()
+  		tablero.crearBloquesRompibles()
   		tablero.bloques().forEach({b => game.addVisual(b)})		
 	}
 	
 	method iniciarNivel() {
-  		15.times({e => malos.add(new malo()) })
-  		malos.forEach({b => game.addVisual(b)})
+  		15.times({e => malos.add(new Malo()) })
+  		malos.forEach({m => game.addVisual(m)})
   		game.addVisualCharacter(monigote)
 	}
 	

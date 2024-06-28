@@ -1,0 +1,9 @@
+import wollok.game.*
+import menu.*
+
+program bombita {
+	
+	menu.menucito()						
+	game.start()
+			
+}
